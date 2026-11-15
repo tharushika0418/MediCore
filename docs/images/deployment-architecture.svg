@@ -1,0 +1,142 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 850" width="1400" height="850" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>MediCore – Deployment Architecture (AWS)</title>
+  <defs>
+    <marker id="a-rest" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+    <marker id="a-rpc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#34d399"/></marker>
+    <marker id="a-evt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#fbbf24"/></marker>
+    <marker id="a-db" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c084fc"/></marker>
+  </defs>
+  <style>
+    .title{fill:#f8fafc;font-size:26px;font-weight:700}
+    .subtitle{fill:#94a3b8;font-size:14px}
+    .zone{fill:#0f1a2e;stroke:#334155;stroke-width:1.5;stroke-dasharray:8 6}
+    .zone-label{fill:#fdba74;font-size:16px;font-weight:600}
+    .cell{fill:#111c33;stroke:#475569;stroke-width:1.2}
+    .cell-label{fill:#94a3b8;font-size:12px;font-weight:600;letter-spacing:.4px}
+    .client{fill:#3b1820;stroke:#fb7185;stroke-width:1.5}
+    .alb{fill:#1e1b4b;stroke:#818cf8;stroke-width:1.5}
+    .svc{fill:#0c2a3f;stroke:#38bdf8;stroke-width:1.5}
+    .grpc{fill:#052e22;stroke:#34d399;stroke-width:1.5}
+    .kafka{fill:#2a1d06;stroke:#fbbf24;stroke-width:1.5}
+    .db{fill:#2e1065;stroke:#c084fc;stroke-width:1.5}
+    .name{fill:#f1f5f9;font-size:15px;font-weight:600}
+    .meta{fill:#94a3b8;font-size:12px}
+    .bg-g{fill:#6ee7b7;font-size:11px;font-weight:600}
+    .bg-k{fill:#fcd34d;font-size:11px;font-weight:600}
+    .rest{fill:none;stroke:#94a3b8;stroke-width:2;stroke-dasharray:7 5}
+    .rpc{fill:none;stroke:#34d399;stroke-width:2;stroke-dasharray:7 5}
+    .sql{fill:none;stroke:#c084fc;stroke-width:2;stroke-dasharray:7 5}
+    .evt{fill:none;stroke:#fbbf24;stroke-width:3;stroke-dasharray:1 8;stroke-linecap:round}
+    .msg{fill:#fbbf24}
+    .legend{fill:#cbd5e1;font-size:13px}
+  </style>
+
+  <rect width="1400" height="850" rx="16" fill="#0b1220"/>
+  <text x="40" y="52" class="title">Deployment Architecture (AWS)</text>
+  <text x="40" y="76" class="subtitle">Every service runs as an ECS task · only the load balancer is public</text>
+
+  <!-- Frontend & ALB -->
+  <rect x="40" y="405" width="150" height="70" rx="12" class="client"/>
+  <text x="115" y="436" text-anchor="middle" class="name">Frontend</text>
+  <text x="115" y="455" text-anchor="middle" class="meta">Client</text>
+
+  <rect x="225" y="395" width="180" height="90" rx="12" class="alb"/>
+  <text x="315" y="427" text-anchor="middle" class="name">Application Load</text>
+  <text x="315" y="446" text-anchor="middle" class="name">Balancer (ALB)</text>
+  <text x="315" y="467" text-anchor="middle" class="meta">public subnet</text>
+
+  <!-- ECS cluster -->
+  <rect x="440" y="100" width="640" height="680" rx="18" class="zone"/>
+  <text x="462" y="128" class="zone-label">ECS Cluster</text>
+
+  <!-- Auth -->
+  <rect x="470" y="150" width="280" height="150" rx="12" class="cell"/>
+  <text x="484" y="172" class="cell-label">ECS SERVICE</text>
+  <rect x="490" y="185" width="240" height="95" rx="10" class="svc"/>
+  <text x="610" y="228" text-anchor="middle" class="name">Auth Service</text>
+  <text x="610" y="248" text-anchor="middle" class="meta">ECS task</text>
+
+  <!-- Billing -->
+  <rect x="770" y="150" width="280" height="150" rx="12" class="cell"/>
+  <text x="784" y="172" class="cell-label">ECS SERVICE</text>
+  <rect x="790" y="185" width="240" height="95" rx="10" class="svc"/>
+  <text x="862" y="228" text-anchor="middle" class="name">Billing Service</text>
+  <text x="862" y="248" text-anchor="middle" class="meta">ECS task</text>
+  <rect x="935" y="193" width="87" height="79" rx="8" class="grpc"/>
+  <text x="978" y="229" text-anchor="middle" class="bg-g">gRPC</text>
+  <text x="978" y="244" text-anchor="middle" class="bg-g">Server</text>
+
+  <!-- API Gateway -->
+  <rect x="470" y="360" width="280" height="150" rx="12" class="cell"/>
+  <text x="484" y="382" class="cell-label">ECS SERVICE</text>
+  <rect x="490" y="395" width="240" height="95" rx="10" class="svc"/>
+  <text x="610" y="438" text-anchor="middle" class="name">API Gateway</text>
+  <text x="610" y="458" text-anchor="middle" class="meta">ECS task</text>
+
+  <!-- Patient -->
+  <rect x="770" y="360" width="280" height="150" rx="12" class="cell"/>
+  <text x="784" y="382" class="cell-label">ECS SERVICE</text>
+  <rect x="790" y="395" width="240" height="95" rx="10" class="svc"/>
+  <text x="862" y="438" text-anchor="middle" class="name">Patient Service</text>
+  <text x="862" y="458" text-anchor="middle" class="meta">ECS task</text>
+  <rect x="935" y="401" width="87" height="40" rx="7" class="grpc"/>
+  <text x="978" y="425" text-anchor="middle" class="bg-g">gRPC Client</text>
+  <rect x="935" y="445" width="87" height="40" rx="7" class="kafka"/>
+  <text x="978" y="462" text-anchor="middle" class="bg-k">Kafka</text>
+  <text x="978" y="476" text-anchor="middle" class="bg-k">Producer</text>
+
+  <!-- Analytics -->
+  <rect x="770" y="580" width="280" height="150" rx="12" class="cell"/>
+  <text x="784" y="602" class="cell-label">ECS SERVICE</text>
+  <rect x="790" y="615" width="240" height="95" rx="10" class="svc"/>
+  <text x="862" y="658" text-anchor="middle" class="name">Analytics Service</text>
+  <text x="862" y="678" text-anchor="middle" class="meta">ECS task</text>
+  <rect x="935" y="623" width="87" height="79" rx="8" class="kafka"/>
+  <text x="978" y="659" text-anchor="middle" class="bg-k">Kafka</text>
+  <text x="978" y="674" text-anchor="middle" class="bg-k">Consumer</text>
+
+  <!-- RDS -->
+  <rect x="1110" y="100" width="260" height="260" rx="18" class="zone"/>
+  <text x="1132" y="128" class="zone-label">Amazon RDS</text>
+  <path d="M1132,170 a48,12 0 0,1 96,0 v110 a48,12 0 0,1 -96,0 z" class="db"/>
+  <ellipse cx="1180" cy="170" rx="48" ry="12" class="db"/>
+  <text x="1180" y="228" text-anchor="middle" class="name">Auth</text>
+  <text x="1180" y="246" text-anchor="middle" class="meta">Service DB</text>
+  <path d="M1252,170 a48,12 0 0,1 96,0 v110 a48,12 0 0,1 -96,0 z" class="db"/>
+  <ellipse cx="1300" cy="170" rx="48" ry="12" class="db"/>
+  <text x="1300" y="228" text-anchor="middle" class="name">Patient</text>
+  <text x="1300" y="246" text-anchor="middle" class="meta">Service DB</text>
+
+  <!-- MSK -->
+  <rect x="1110" y="420" width="260" height="210" rx="18" class="zone"/>
+  <text x="1132" y="448" class="zone-label">Amazon MSK</text>
+  <rect x="1130" y="500" width="220" height="80" rx="12" class="kafka"/>
+  <text x="1240" y="528" text-anchor="middle" class="name">Kafka Topic</text>
+  <text x="1240" y="545" text-anchor="middle" class="bg-k">(patient)</text>
+  <g class="msg">
+    <rect x="1150" y="558" width="9" height="9" rx="2"/><rect x="1175" y="558" width="9" height="9" rx="2"/>
+    <rect x="1200" y="558" width="9" height="9" rx="2"/><rect x="1225" y="558" width="9" height="9" rx="2"/>
+    <rect x="1250" y="558" width="9" height="9" rx="2"/><rect x="1275" y="558" width="9" height="9" rx="2"/>
+    <rect x="1300" y="558" width="9" height="9" rx="2"/><rect x="1325" y="558" width="9" height="9" rx="2"/>
+  </g>
+  <text x="1350" y="448" text-anchor="end" class="meta">private subnet</text>
+
+  <!-- Connections -->
+  <path d="M190,440 H223" class="rest" marker-end="url(#a-rest)"/>
+  <path d="M405,442 H488" class="rest" marker-end="url(#a-rest)"/>
+  <path d="M610,395 V282" class="rest" marker-end="url(#a-rest)"/>
+  <path d="M730,442 H788" class="rest" marker-end="url(#a-rest)"/>
+  <path d="M1022,421 H1062 V232 H1024" class="rpc" marker-end="url(#a-rpc)"/>
+  <path d="M650,185 V142 H1180 V156" class="sql" marker-end="url(#a-db)"/>
+  <path d="M880,395 V335 H1300 V294" class="sql" marker-end="url(#a-db)"/>
+  <path d="M1022,465 H1240 V496" class="evt" marker-end="url(#a-evt)"/>
+  <path d="M1240,580 V662 H1026" class="evt" marker-end="url(#a-evt)"/>
+
+  <!-- Legend -->
+  <g transform="translate(440,815)">
+    <path d="M0,0 H40" class="rest"/><text x="50" y="5" class="legend">HTTP</text>
+    <path d="M120,0 H160" class="rpc"/><text x="170" y="5" class="legend">gRPC</text>
+    <path d="M240,0 H280" class="sql"/><text x="290" y="5" class="legend">Database (JDBC)</text>
+    <path d="M430,0 H470" class="evt"/><text x="480" y="5" class="legend">Kafka event</text>
+  </g>
+</svg>

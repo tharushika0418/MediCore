@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1260 600" width="1260" height="600" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>MediCore – Spring Boot Layered Architecture</title>
+  <defs>
+    <marker id="a-req" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#34d399"/></marker>
+    <marker id="a-res" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#e2e8f0"/></marker>
+  </defs>
+  <style>
+    .title{fill:#f8fafc;font-size:26px;font-weight:700}
+    .subtitle{fill:#94a3b8;font-size:14px}
+    .client{fill:#3b1820;stroke:#fb7185;stroke-width:1.5}
+    .layer{fill:#0c2a3f;stroke:#38bdf8;stroke-width:1.5}
+    .db{fill:#2e1065;stroke:#c084fc;stroke-width:1.5}
+    .name{fill:#f1f5f9;font-size:18px;font-weight:700}
+    .pkg{fill:#7dd3fc;font-size:12px;font-family:'JetBrains Mono',Consolas,monospace}
+    .desc{fill:#cbd5e1;font-size:13px}
+    .req{fill:none;stroke:#34d399;stroke-width:2}
+    .res{fill:none;stroke:#e2e8f0;stroke-width:2;stroke-dasharray:6 5}
+    .pill{fill:#020617;stroke:#334155;stroke-width:1}
+    .pill-t{fill:#e2e8f0;font-size:12px;font-weight:600}
+    .legend{fill:#cbd5e1;font-size:13px}
+  </style>
+
+  <rect width="1260" height="600" rx="16" fill="#0b1220"/>
+  <text x="40" y="52" class="title">Spring Boot Layered Architecture</text>
+  <text x="40" y="76" class="subtitle">How a request moves through each microservice</text>
+
+  <!-- Frontend -->
+  <rect x="40" y="130" width="220" height="120" rx="14" class="client"/>
+  <text x="150" y="196" text-anchor="middle" class="name">Frontend (Client)</text>
+
+  <!-- Controller -->
+  <rect x="420" y="130" width="290" height="120" rx="14" class="layer"/>
+  <text x="565" y="168" text-anchor="middle" class="name">Controller</text>
+  <text x="565" y="186" text-anchor="middle" class="pkg">@RestController</text>
+  <text x="565" y="214" text-anchor="middle" class="desc">Handles HTTP request &amp; response</text>
+
+  <!-- Service -->
+  <rect x="850" y="130" width="340" height="120" rx="14" class="layer"/>
+  <text x="1020" y="168" text-anchor="middle" class="name">Service</text>
+  <text x="1020" y="186" text-anchor="middle" class="pkg">@Service</text>
+  <text x="1020" y="212" text-anchor="middle" class="desc">Handles business logic, including conversions</text>
+  <text x="1020" y="230" text-anchor="middle" class="desc">between DTOs and domain models</text>
+
+  <!-- Repository -->
+  <rect x="870" y="390" width="300" height="120" rx="14" class="layer"/>
+  <text x="1020" y="428" text-anchor="middle" class="name">Repository</text>
+  <text x="1020" y="446" text-anchor="middle" class="pkg">JpaRepository</text>
+  <text x="1020" y="474" text-anchor="middle" class="desc">Handles interactions with the database</text>
+
+  <!-- DB -->
+  <path d="M540,402 a60,14 0 0,1 120,0 v96 a60,14 0 0,1 -120,0 z" class="db"/>
+  <ellipse cx="600" cy="402" rx="60" ry="14" class="db"/>
+  <text x="600" y="456" text-anchor="middle" class="name">db</text>
+  <text x="600" y="476" text-anchor="middle" class="pkg" fill="#d8b4fe">PostgreSQL</text>
+
+  <!-- Arrows -->
+  <path d="M260,165 H416" class="req" marker-end="url(#a-req)"/>
+  <path d="M420,215 H264" class="res" marker-end="url(#a-res)"/>
+  <path d="M710,165 H846" class="req" marker-end="url(#a-req)"/>
+  <path d="M850,215 H714" class="res" marker-end="url(#a-res)"/>
+  <path d="M1100,250 V386" class="req" marker-end="url(#a-req)"/>
+  <path d="M940,390 V254" class="res" marker-end="url(#a-res)"/>
+  <path d="M870,450 H664" class="req" marker-end="url(#a-req)"/>
+
+  <!-- Labels -->
+  <rect x="275" y="151" width="130" height="28" rx="14" class="pill"/><text x="340" y="170" text-anchor="middle" class="pill-t">Makes POST request</text>
+  <rect x="275" y="201" width="130" height="28" rx="14" class="pill"/><text x="340" y="220" text-anchor="middle" class="pill-t">Returns response</text>
+  <rect x="730" y="151" width="96" height="28" rx="14" class="pill"/><text x="778" y="170" text-anchor="middle" class="pill-t">Passes DTO</text>
+  <rect x="730" y="201" width="96" height="28" rx="14" class="pill"/><text x="782" y="220" text-anchor="middle" class="pill-t">Returns DTO</text>
+  <rect x="1052" y="304" width="96" height="28" rx="14" class="pill"/><text x="1100" y="323" text-anchor="middle" class="pill-t">Passes model</text>
+  <rect x="888" y="304" width="104" height="28" rx="14" class="pill"/><text x="940" y="323" text-anchor="middle" class="pill-t">Returns model</text>
+  <rect x="716" y="436" width="100" height="28" rx="14" class="pill"/><text x="766" y="455" text-anchor="middle" class="pill-t">Runs queries</text>
+
+  <!-- Legend -->
+  <g transform="translate(40,565)">
+    <path d="M0,0 H40" class="req"/><text x="50" y="5" class="legend">Request flow</text>
+    <path d="M170,0 H210" class="res"/><text x="220" y="5" class="legend">Response flow</text>
+  </g>
+</svg>

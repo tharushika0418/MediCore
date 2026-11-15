@@ -1,0 +1,2 @@
+# MediCore
+Patient Management System

@@ -4,6 +4,7 @@ import com.medicore.patientservice.dto.PatientRequestDTO;
 import com.medicore.patientservice.dto.PatientResponseDTO;
 import com.medicore.patientservice.exception.EmailAlreadyExistsException;
 import com.medicore.patientservice.exception.PatientNotFoundException;
+import com.medicore.patientservice.grpc.BillingServiceGrpcClient;
 import com.medicore.patientservice.mapper.PatientMapper;
 import com.medicore.patientservice.model.Patient;
 import com.medicore.patientservice.repository.PatientRepository;
@@ -16,9 +17,12 @@ import java.util.UUID;
 public class PatientService {
 
     private final PatientRepository patientRepository;
+    private final BillingServiceGrpcClient billingServiceGrpcClient;
 
-    public PatientService(PatientRepository patientRepository) {
+    public PatientService(PatientRepository patientRepository,
+                          BillingServiceGrpcClient billingServiceGrpcClient) {
         this.patientRepository = patientRepository;
+        this.billingServiceGrpcClient = billingServiceGrpcClient;
     }
 
     public List<PatientResponseDTO> getPatients() {
@@ -36,6 +40,11 @@ public class PatientService {
         }
 
         Patient newPatient = patientRepository.save(PatientMapper.toModel(patientRequestDTO));
+
+        billingServiceGrpcClient.createBillingAccount(
+                newPatient.getId().toString(),
+                newPatient.getName(),
+                newPatient.getEmail());
 
         return PatientMapper.toDTO(newPatient);
     }

@@ -23,6 +23,7 @@
   - [Deployment Architecture (AWS)](#deployment-architecture-aws)
   - [Service Layered Architecture](#service-layered-architecture)
   - [gRPC Architecture](#grpc-architecture)
+  - [Kafka Architecture (Event-Driven)](#kafka-architecture-event-driven)
 - [Services](#services)
 - [Communication Patterns](#communication-patterns)
 - [Project Structure](#project-structure)
@@ -179,6 +180,38 @@ message BillingResponse {
 
 REST suits clients and browsers. gRPC suits fast, strongly typed internal calls between services.
 
+### Kafka Architecture (Event-Driven)
+
+When something happens that **other services may care about**, `patient-service` doesn't call them directly. It publishes an **event** to a Kafka topic, and each interested service **consumes** it on its own schedule.
+
+![Kafka architecture: the patient service's Kafka producer publishes PatientEvents to the patient topic, which the analytics and notification services each consume independently; billing is still called synchronously over gRPC](docs/images/kafka-architecture.svg)
+
+**How it works:**
+
+1. A client creates a patient with `POST /patients` (REST).
+2. `patient-service` saves the patient and calls `billing-service` over **gRPC**, because it needs the answer straight away.
+3. `patient-service`'s **Kafka producer** publishes a `PatientEvent` (Protobuf) to the **`patient`** topic, then returns to the client **without waiting** for anyone to read it.
+4. `analytics-service` and `notification-service` each have a **Kafka consumer** in their **own consumer group**, so **both** receive every event and process it independently.
+
+**gRPC or Kafka?**
+
+| | gRPC (Patient → Billing) | Kafka (Patient → Analytics, Notification) |
+|---|---|---|
+| Style | Synchronous request/response | Asynchronous publish/subscribe |
+| Caller waits? | Yes, needs the result (`accountId`) | No: fire and forget |
+| If the receiver is down | The call fails | The event waits in the topic and is read when the service is back |
+| Number of receivers | Exactly one | Any number, added without changing the producer |
+| Use it when | You need an answer **now** | Others should **react** to something that happened |
+
+**Running Kafka locally**
+
+Kafka runs as a single `apache/kafka:4.4.0` container in **KRaft mode** (no ZooKeeper) on `medicore-network`:
+
+| Client runs… | Bootstrap server |
+|---|---|
+| In a container on `medicore-network` | `kafka:9092` |
+| On your machine (`./mvnw spring-boot:run`, IDE tools) | `localhost:9094` |
+
 ---
 
 ## Services
@@ -208,7 +241,7 @@ REST suits clients and browsers. gRPC suits fast, strongly typed internal calls 
 The contract is defined in `billing_service.proto`. `patient-service` (on patient creation) and `appointment-service` (on booking) call `billing-service` over gRPC. See [gRPC Architecture](#grpc-architecture) for the diagram and the full contract.
 
 ### 3. Asynchronous: Kafka events
-`patient-service` publishes a `PatientEvent` (serialised with Protobuf) to the `patient` topic. `analytics-service` and `notification-service` each consume it independently, in their own consumer groups.
+`patient-service` publishes a `PatientEvent` (serialised with Protobuf) to the `patient` topic. `analytics-service` and `notification-service` each consume it independently, in their own consumer groups. See [Kafka Architecture](#kafka-architecture-event-driven) for the diagram and details.
 
 ---
 
@@ -279,7 +312,7 @@ Each service is configured with environment variables, so no secrets are committ
 | `SQL_INIT_MODE` | patient | `always` (seed with `data.sql`) | `always` |
 | `BILLING_SERVICE_ADDRESS` | patient | `localhost` | `billing-service` |
 | `BILLING_SERVICE_GRPC_PORT` | patient | `9001` | `9001` |
-| `SPRING_KAFKA_BOOTSTRAP_SERVERS` | patient, analytics, notification *(planned)* | – | `kafka:9092` |
+| `KAFKA_BOOTSTRAP_SERVERS` | patient (analytics, notification planned) | `localhost:9094` | `kafka:9092` |
 | `JWT_SECRET` | auth *(planned)* | – | *(base64-encoded secret, never commit)* |
 | `AUTH_SERVICE_URL` | api-gateway *(planned)* | – | `http://auth-service:4005` |
 

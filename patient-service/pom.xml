@@ -92,6 +92,14 @@
             <artifactId>protobuf-java</artifactId>
         </dependency>
 
+        <!-- Kafka: publishes PatientEvents to the "patient" topic
+             (Spring for Apache Kafka + Kafka client; versions managed by Spring Boot).
+             Events are serialised with Protobuf (protobuf-java, declared above). -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka</artifactId>
+        </dependency>
+
         <!-- DevTools: automatic restart and live reload (development only, excluded from the packaged jar) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -119,6 +127,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-grpc-client-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-kafka-test</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

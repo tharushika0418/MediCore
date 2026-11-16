@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 700" width="1400" height="700" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif">
+  <title>MediCore – gRPC Architecture</title>
+  <defs>
+    <marker id="a-rest" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#94a3b8"/></marker>
+    <marker id="a-rpc" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#34d399"/></marker>
+  </defs>
+  <style>
+    .title{fill:#f8fafc;font-size:26px;font-weight:700}
+    .subtitle{fill:#94a3b8;font-size:14px}
+    .zone{fill:#0f1a2e;stroke:#334155;stroke-width:1.5;stroke-dasharray:8 6}
+    .zone-label{fill:#7dd3fc;font-size:16px;font-weight:600}
+    .client{fill:#3b1820;stroke:#fb7185;stroke-width:1.5}
+    .svc{fill:#0c2a3f;stroke:#38bdf8;stroke-width:1.5}
+    .grpc{fill:#052e22;stroke:#34d399;stroke-width:1.5}
+    .name{fill:#f1f5f9;font-size:17px;font-weight:600}
+    .meta{fill:#94a3b8;font-size:12px}
+    .bg-g{fill:#6ee7b7;font-size:13px;font-weight:600}
+    .rest{fill:none;stroke:#94a3b8;stroke-width:2;stroke-dasharray:7 5}
+    .rpc{fill:none;stroke:#34d399;stroke-width:2;stroke-dasharray:7 5}
+    .pill{fill:#020617;stroke:#334155;stroke-width:1}
+    .pill-t{fill:#e2e8f0;font-size:12px;font-weight:600}
+    .pill-s{fill:#94a3b8;font-size:11px}
+    .legend{fill:#cbd5e1;font-size:13px}
+  </style>
+
+  <rect width="1400" height="700" rx="16" fill="#0b1220"/>
+  <text x="40" y="52" class="title">gRPC Architecture</text>
+  <text x="40" y="76" class="subtitle">The client uses REST (JSON); services talk to each other with gRPC (Protobuf) over the Docker network</text>
+
+  <!-- Frontend -->
+  <rect x="40" y="370" width="200" height="90" rx="12" class="client"/>
+  <text x="140" y="412" text-anchor="middle" class="name">Frontend</text>
+  <text x="140" y="433" text-anchor="middle" class="meta">(Client)</text>
+
+  <!-- Docker network -->
+  <rect x="380" y="100" width="990" height="540" rx="18" class="zone"/>
+  <text x="404" y="130" class="zone-label">🐳 Docker Network</text>
+
+  <!-- proto contract -->
+  <path d="M1140,130 h34 l16,16 v48 h-50 z" fill="#1e3a8a" stroke="#60a5fa" stroke-width="1.5"/>
+  <path d="M1174,130 v16 h16" fill="none" stroke="#60a5fa" stroke-width="1.5"/>
+  <path d="M1156,154 l16,9 l-16,9 z" fill="#60a5fa"/>
+  <text x="1165" y="216" text-anchor="middle" class="pill-t">billing_service.proto</text>
+  <text x="1165" y="233" text-anchor="middle" class="meta">shared contract: generates client + server code</text>
+
+  <!-- Patient service -->
+  <rect x="440" y="250" width="330" height="110" rx="12" class="svc"/>
+  <text x="540" y="299" text-anchor="middle" class="name">Patient Service</text>
+  <text x="540" y="320" text-anchor="middle" class="meta">(micro-service)</text>
+  <rect x="650" y="270" width="110" height="70" rx="8" class="grpc"/>
+  <text x="705" y="301" text-anchor="middle" class="bg-g">gRPC</text>
+  <text x="705" y="319" text-anchor="middle" class="bg-g">Client</text>
+
+  <!-- Appointment service -->
+  <rect x="440" y="470" width="330" height="110" rx="12" class="svc"/>
+  <text x="540" y="519" text-anchor="middle" class="name">Appointment</text>
+  <text x="540" y="539" text-anchor="middle" class="name">Service</text>
+  <text x="540" y="559" text-anchor="middle" class="meta">(micro-service)</text>
+  <rect x="650" y="490" width="110" height="70" rx="8" class="grpc"/>
+  <text x="705" y="521" text-anchor="middle" class="bg-g">gRPC</text>
+  <text x="705" y="539" text-anchor="middle" class="bg-g">Client</text>
+
+  <!-- Billing service -->
+  <rect x="1000" y="360" width="330" height="110" rx="12" class="svc"/>
+  <rect x="1010" y="380" width="110" height="70" rx="8" class="grpc"/>
+  <text x="1065" y="411" text-anchor="middle" class="bg-g">gRPC</text>
+  <text x="1065" y="429" text-anchor="middle" class="bg-g">Server</text>
+  <text x="1225" y="409" text-anchor="middle" class="name">Billing Service</text>
+  <text x="1225" y="430" text-anchor="middle" class="meta">(micro-service)</text>
+
+  <!-- Connections: REST from the client -->
+  <path d="M240,415 H400 V305 H436" class="rest" marker-end="url(#a-rest)"/>
+  <path d="M400,415 V525 H436" class="rest" marker-end="url(#a-rest)"/>
+
+  <!-- Connections: gRPC to billing -->
+  <path d="M760,305 H880 V400 H1006" class="rpc" marker-end="url(#a-rpc)"/>
+  <path d="M760,525 H880 V430 H1006" class="rpc" marker-end="url(#a-rpc)"/>
+
+  <!-- Labels -->
+  <rect x="250" y="392" width="120" height="46" rx="12" class="pill"/>
+  <text x="310" y="411" text-anchor="middle" class="pill-t">REST request</text>
+  <text x="310" y="428" text-anchor="middle" class="pill-s">(JSON over HTTP)</text>
+
+  <rect x="800" y="331" width="160" height="46" rx="12" class="pill"/>
+  <text x="880" y="350" text-anchor="middle" class="pill-t">gRPC request</text>
+  <text x="880" y="367" text-anchor="middle" class="pill-s">(Protobuf over HTTP/2)</text>
+
+  <rect x="800" y="453" width="160" height="46" rx="12" class="pill"/>
+  <text x="880" y="472" text-anchor="middle" class="pill-t">gRPC request</text>
+  <text x="880" y="489" text-anchor="middle" class="pill-s">(Protobuf over HTTP/2)</text>
+
+  <!-- Legend -->
+  <g transform="translate(380,672)">
+    <path d="M0,0 H40" class="rest"/><text x="50" y="5" class="legend">REST / HTTP (JSON)</text>
+    <path d="M220,0 H260" class="rpc"/><text x="270" y="5" class="legend">gRPC (Protobuf, synchronous)</text>
+  </g>
+</svg>

@@ -22,6 +22,7 @@
   - [Development Architecture](#development-architecture)
   - [Deployment Architecture (AWS)](#deployment-architecture-aws)
   - [Service Layered Architecture](#service-layered-architecture)
+  - [gRPC Architecture](#grpc-architecture)
 - [Services](#services)
 - [Communication Patterns](#communication-patterns)
 - [Project Structure](#project-structure)
@@ -125,6 +126,59 @@ src/main/java/com/medicore/patientservice/
 └── PatientServiceApplication.java
 ```
 
+### gRPC Architecture
+
+Clients talk to MediCore over **REST (JSON)**. Inside the Docker network, services talk to each other over **gRPC (Protobuf)**. `billing-service` runs one **gRPC server**, and two services call it through their own **gRPC clients**:
+
+| gRPC client | Calls billing when… |
+|---|---|
+| `patient-service` | A patient is created, to open a billing account |
+| `appointment-service` | An appointment is booked, to bill for it |
+
+![gRPC architecture: the frontend sends REST JSON requests to the patient and appointment services; each has a gRPC client that sends Protobuf requests to the billing service's gRPC server, using a shared billing_service.proto contract](docs/images/grpc-architecture.svg)
+
+**How a request flows** (using patient creation as the example; appointments work the same way):
+
+1. The **frontend** sends `POST /patients` with a JSON body to `patient-service` (REST).
+2. `patient-service` saves the patient, then its **gRPC client** calls `CreateBillingAccount` on `billing-service`.
+3. The request is sent as **Protobuf** (compact binary) over **HTTP/2** to the **gRPC server** in `billing-service` (port `9001`).
+4. `billing-service` creates the account and returns a typed `BillingResponse`.
+
+**The contract: `billing_service.proto`**
+
+All three services share one `.proto` file. At build time it generates the Java classes for the **server** (billing) and the **clients** (patient and appointment), so every side always agrees on method names, fields and types. A mismatch fails at compile time instead of at runtime.
+
+```protobuf
+syntax = "proto3";
+
+service BillingService {
+  rpc CreateBillingAccount (BillingRequest) returns (BillingResponse);
+}
+
+message BillingRequest {
+  string patientId = 1;
+  string name = 2;
+  string email = 3;
+}
+
+message BillingResponse {
+  string accountId = 1;
+  string status = 2;
+}
+```
+
+**Why gRPC between services, and REST for the client?**
+
+| | REST (JSON) | gRPC (Protobuf) |
+|---|---|---|
+| Used for | Frontend → services | Service → service |
+| Payload | Text (JSON), human-readable | Binary, smaller and faster to parse |
+| Transport | HTTP/1.1 | HTTP/2 (multiplexed, persistent connections) |
+| Contract | Optional (OpenAPI) | **Required** (`.proto`), with generated, type-safe code |
+| Browser support | Native | Needs a proxy (gRPC-Web) |
+
+REST suits clients and browsers. gRPC suits fast, strongly typed internal calls between services.
+
 ---
 
 ## Services
@@ -134,7 +188,8 @@ src/main/java/com/medicore/patientservice/
 | **api-gateway** | Single entry point; routing and JWT validation | REST | – | `4004` |
 | **auth-service** | User login, JWT issuing and validation | REST | PostgreSQL (`auth-db`) | `4005` |
 | **patient-service** | Patient CRUD; publishes patient events; calls billing | REST, gRPC client, Kafka producer | PostgreSQL (`patient-db`) | `4000` |
-| **billing-service** | Creates and manages billing accounts | gRPC server | – | `4001` (HTTP), `9001` (gRPC) |
+| **appointment-service** | Books and manages appointments; bills them via billing | REST, gRPC client | – | – |
+| **billing-service** | Creates and manages billing accounts | gRPC server (called by patient and appointment) | – | `4001` (HTTP), `9001` (gRPC) |
 | **analytics-service** | Consumes patient events for analytics | Kafka consumer | – | `4002` |
 | **notification-service** | Sends notifications on patient events | Kafka consumer | – | `4003` |
 
@@ -149,14 +204,8 @@ src/main/java/com/medicore/patientservice/
 2. Later requests include the header `Authorization: Bearer <token>`.
 3. The gateway checks the token with the auth service, then forwards the request to the target service.
 
-### 2. Synchronous: gRPC (Patient → Billing)
-The contract is defined in `billing_service.proto`. When a patient is created, `patient-service` calls `BillingService.CreateBillingAccount` on `billing-service`.
-
-```protobuf
-service BillingService {
-  rpc CreateBillingAccount (BillingRequest) returns (BillingResponse);
-}
-```
+### 2. Synchronous: gRPC (Patient and Appointment → Billing)
+The contract is defined in `billing_service.proto`. `patient-service` (on patient creation) and `appointment-service` (on booking) call `billing-service` over gRPC. See [gRPC Architecture](#grpc-architecture) for the diagram and the full contract.
 
 ### 3. Asynchronous: Kafka events
 `patient-service` publishes a `PatientEvent` (serialised with Protobuf) to the `patient` topic. `analytics-service` and `notification-service` each consume it independently, in their own consumer groups.
@@ -272,7 +321,18 @@ The same template can be deployed to a real AWS account after it has been checke
 
 ## API Overview
 
-Full interactive docs are served by each service at `/swagger-ui.html` (OpenAPI).
+### API Documentation (OpenAPI / Swagger)
+
+Each service generates its own API docs from the code with [springdoc-openapi](https://springdoc.org/), so the docs always match the implementation.
+
+| What | URL (patient-service, local) |
+|---|---|
+| Swagger UI (interactive: try endpoints in the browser) | http://localhost:4000/swagger-ui.html |
+| OpenAPI spec (JSON: import into Postman or generate clients) | http://localhost:4000/v3/api-docs |
+
+> 💡 The spec path is `/v3/api-docs`, not `/v3/docs`. Other services use the same paths on their own ports.
+
+### Endpoints
 
 | Method | Endpoint | Description | Auth |
 |---|---|---|---|

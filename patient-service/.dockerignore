@@ -1,0 +1,13 @@
+# Keep the build context small and never send secrets to Docker.
+.env
+.env.*
+!.env.example
+
+target/
+.idea/
+.vscode/
+*.iml
+*.log
+*.Dockerfile
+Dockerfile
+.dockerignore

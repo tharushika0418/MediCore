@@ -1,0 +1,12 @@
+###  Update an existing Patient
+PUT http://localhost:4000/patients/1
+Content-Type: application/json
+
+{
+  "name": "Kasun Gamage",
+  "email": "kasun.perera@example.com",
+  "address": "45 Galle Road, Colombo 03",
+  "dateOfBirth": "1992-08-14",
+  "registeredDate": "2026-11-15"
+}
+###

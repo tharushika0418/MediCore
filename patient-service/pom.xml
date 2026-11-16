@@ -68,6 +68,30 @@
             <version>${springdoc.version}</version>
         </dependency>
 
+        <!-- gRPC client: calls billing-service (Spring Boot 4.1 built-in support; versions managed by Boot) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-grpc-client</artifactId>
+        </dependency>
+
+        <!-- Libraries the generated code from src/main/proto uses directly.
+             Declared explicitly instead of relying on transitive dependencies; versions managed by Spring Boot. -->
+        <dependency>
+            <!-- Client stubs (BillingServiceGrpc.newBlockingStub, ...) -->
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-stub</artifactId>
+        </dependency>
+        <dependency>
+            <!-- Protobuf marshalling for gRPC calls -->
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-protobuf</artifactId>
+        </dependency>
+        <dependency>
+            <!-- Protobuf runtime for generated message classes (BillingRequest, BillingResponse) -->
+            <groupId>com.google.protobuf</groupId>
+            <artifactId>protobuf-java</artifactId>
+        </dependency>
+
         <!-- DevTools: automatic restart and live reload (development only, excluded from the packaged jar) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -92,10 +116,23 @@
             <artifactId>spring-boot-starter-validation-test</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-grpc-client-test</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <!-- Generates Java message and gRPC client stub classes from src/main/proto/*.proto.
+                 Version, protoc and the grpc-java generator are pre-configured by spring-boot-starter-parent.
+                 Requires Maven 3.9.6+ (use ./mvnw). -->
+            <plugin>
+                <groupId>io.github.ascopes</groupId>
+                <artifactId>protobuf-maven-plugin</artifactId>
+            </plugin>
+
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>

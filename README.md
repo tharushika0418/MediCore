@@ -271,16 +271,19 @@ cd patient-service
 
 Each service is configured with environment variables, so no secrets are committed to the repository.
 
-| Variable | Used by | Example |
-|---|---|---|
-| `SPRING_DATASOURCE_URL` | auth, patient | `jdbc:postgresql://patient-db:5432/db` |
-| `SPRING_DATASOURCE_USERNAME` | auth, patient | `admin_user` |
-| `SPRING_DATASOURCE_PASSWORD` | auth, patient | *(set locally, never commit)* |
-| `SPRING_KAFKA_BOOTSTRAP_SERVERS` | patient, analytics, notification | `kafka:9092` |
-| `BILLING_SERVICE_ADDRESS` | patient | `billing-service` |
-| `BILLING_SERVICE_GRPC_PORT` | patient | `9001` |
-| `JWT_SECRET` | auth | *(base64-encoded secret, never commit)* |
-| `AUTH_SERVICE_URL` | api-gateway | `http://auth-service:4005` |
+| Variable | Used by | Local (`./mvnw`) | Docker |
+|---|---|---|---|
+| `DB_URL` | patient | `jdbc:postgresql://localhost:5432/patient_db` | `jdbc:postgresql://patient-service-db:5432/patient_db` |
+| `DB_USERNAME` | patient | `postgres` | `postgres` |
+| `DB_PASSWORD` | patient | *(in `.env`, never commit)* | *(passed at runtime, never commit)* |
+| `SQL_INIT_MODE` | patient | `always` (seed with `data.sql`) | `always` |
+| `BILLING_SERVICE_ADDRESS` | patient | `localhost` | `billing-service` |
+| `BILLING_SERVICE_GRPC_PORT` | patient | `9001` | `9001` |
+| `SPRING_KAFKA_BOOTSTRAP_SERVERS` | patient, analytics, notification *(planned)* | – | `kafka:9092` |
+| `JWT_SECRET` | auth *(planned)* | – | *(base64-encoded secret, never commit)* |
+| `AUTH_SERVICE_URL` | api-gateway *(planned)* | – | `http://auth-service:4005` |
+
+Without any of these, `patient-service` falls back to an in-memory H2 database and `localhost:9001` for billing.
 
 > 💡 Keep local values in a `.env` file. It is listed in `.gitignore`.
 

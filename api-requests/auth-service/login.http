@@ -1,0 +1,43 @@
+### Login with the seeded test user (expect 200 + token)
+# The script below saves the token so validate.http can use {{token}}.
+POST http://localhost:4005/login
+Content-Type: application/json
+
+{
+  "email": "testuser@test.com",
+  "password": "password123"
+}
+
+> {%
+    client.global.set("token", response.body.token);
+    client.log("Saved token: " + response.body.token.substring(0, 25) + "...");
+%}
+
+### Login with a wrong password (expect 401)
+POST http://localhost:4005/login
+Content-Type: application/json
+
+{
+  "email": "testuser@test.com",
+  "password": "wrongpassword"
+}
+
+### Login with an unknown email (expect 401, same as a wrong password)
+POST http://localhost:4005/login
+Content-Type: application/json
+
+{
+  "email": "nobody@test.com",
+  "password": "password123"
+}
+
+### Login with invalid input (expect 400: bad email, password under 8 characters)
+POST http://localhost:4005/login
+Content-Type: application/json
+
+{
+  "email": "not-an-email",
+  "password": "short"
+}
+
+###

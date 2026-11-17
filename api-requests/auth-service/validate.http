@@ -1,0 +1,17 @@
+### Validate a token (expect 200)
+# Run the first request in login.http first: it saves {{token}}.
+GET http://localhost:4005/validate
+Authorization: Bearer {{token}}
+
+### Validate a tampered token (expect 401)
+GET http://localhost:4005/validate
+Authorization: Bearer {{token}}tampered
+
+### Validate without a token (expect 401)
+GET http://localhost:4005/validate
+
+### Validate without the "Bearer " prefix (expect 401)
+GET http://localhost:4005/validate
+Authorization: {{token}}
+
+###

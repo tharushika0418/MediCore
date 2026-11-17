@@ -1,0 +1,18 @@
+# Keep the build context small and never send secrets to Docker.
+.env
+.env.*
+!.env.example
+
+target/
+.idea/
+.vscode/
+*.iml
+*.log
+*.Dockerfile
+Dockerfile
+.dockerignore
+
+# The Maven Wrapper is for local builds; the builder image has its own Maven.
+.mvn/
+mvnw
+mvnw.cmd

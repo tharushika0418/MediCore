@@ -1,0 +1,42 @@
+# ===================================================================
+# API Gateway - single entry point for all client requests
+# ===================================================================
+# Clients call the gateway (port 4004); it forwards each request to the
+# right microservice. Service URLs come from environment variables:
+#   Local (./mvnw / mvn):  http://localhost:<port>   (defaults below)
+#   Docker:                http://<container-name>:<port>
+#                          e.g. PATIENT_SERVICE_URL=http://patient-service:4000
+# ===================================================================
+
+server:
+  port: 4004
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:            # Spring Cloud Gateway 5.x prefix (reactive gateway)
+          routes:
+
+            # --- Patient Service: REST API --------------------------------
+            # GET http://localhost:4004/api/patients
+            #   -> GET http://patient-service:4000/patients
+            - id: patient-service-route
+              uri: ${PATIENT_SERVICE_URL:http://localhost:4000}
+              predicates:
+                - Path=/api/patients/**
+              filters:
+                - StripPrefix=1        # remove "/api" before forwarding
+
+            # --- Patient Service: OpenAPI docs ----------------------------
+            # GET http://localhost:4004/api-docs/patients
+            #   -> GET http://patient-service:4000/v3/api-docs
+            - id: api-docs-patient-route
+              uri: ${PATIENT_SERVICE_URL:http://localhost:4000}
+              predicates:
+                - Path=/api-docs/patients
+              filters:
+                - RewritePath=/api-docs/patients,/v3/api-docs

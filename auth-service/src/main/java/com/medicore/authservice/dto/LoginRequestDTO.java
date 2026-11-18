@@ -1,5 +1,6 @@
 package com.medicore.authservice.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -12,10 +13,14 @@ import jakarta.validation.constraints.Size;
  */
 public class LoginRequestDTO {
 
+    @Schema(description = "Registered email address (the login name)",
+            example = "testuser@test.com")
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be a valid email address")
     private String email;
 
+    @Schema(description = "Plain-text password, compared with the stored BCrypt hash",
+            example = "password123", minLength = 8, format = "password")
     @NotBlank(message = "Password is required")
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;

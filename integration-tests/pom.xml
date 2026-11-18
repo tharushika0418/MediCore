@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <!--
+      End-to-end tests for MediCore.
+      Not a Spring Boot application: the tests send real HTTP requests to the
+      running stack (through the API Gateway) with REST Assured and JUnit.
+      Start the containers first, then run:  mvn test
+    -->
+    <groupId>com.medicore</groupId>
+    <artifactId>integration-tests</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>integration-tests</name>
+    <description>MediCore end-to-end tests (REST Assured + JUnit) against the running services</description>
+
+    <properties>
+        <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <rest-assured.version>6.3.0</rest-assured.version>
+        <junit.version>6.1.3</junit.version>
+        <maven-surefire-plugin.version>3.6.1</maven-surefire-plugin.version>
+        <maven-compiler-plugin.version>3.15.0</maven-compiler-plugin.version>
+
+        <!-- Base URL of the API Gateway; override with: mvn test -Dgateway.url=http://... -->
+        <gateway.url>http://localhost:4004</gateway.url>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!-- JUnit BOM: keeps all JUnit modules on the same version -->
+            <dependency>
+                <groupId>org.junit</groupId>
+                <artifactId>junit-bom</artifactId>
+                <version>${junit.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <!-- REST Assured: fluent HTTP testing (given/when/then), JSON path assertions -->
+        <dependency>
+            <groupId>io.rest-assured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <version>${rest-assured.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- JUnit Jupiter: @Test, @BeforeAll, assertions (version from the BOM) -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <plugins>
+            <!-- Compiles the tests for Java 21. Declared explicitly because there is no
+                 Spring Boot parent here; Maven's built-in default (3.1) targets Java 5. -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven-compiler-plugin.version}</version>
+                <configuration>
+                    <release>${maven.compiler.release}</release>
+                </configuration>
+            </plugin>
+
+            <!-- Runs the JUnit tests during "mvn test" -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven-surefire-plugin.version}</version>
+                <configuration>
+                    <systemPropertyVariables>
+                        <!-- Available in tests as System.getProperty("gateway.url") -->
+                        <gateway.url>${gateway.url}</gateway.url>
+                    </systemPropertyVariables>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

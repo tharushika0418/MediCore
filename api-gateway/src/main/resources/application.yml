@@ -6,10 +6,16 @@
 #   Local (./mvnw / mvn):  http://localhost:<port>   (defaults below)
 #   Docker:                http://<container-name>:<port>
 #                          e.g. PATIENT_SERVICE_URL=http://patient-service:4000
+#                               AUTH_SERVICE_URL=http://auth-service:4005
 # ===================================================================
 
 server:
   port: 4004
+
+# Used by the JwtValidation filter to call auth-service's /validate
+auth:
+  service:
+    url: ${AUTH_SERVICE_URL:http://localhost:4005}
 
 spring:
   application:
@@ -21,8 +27,9 @@ spring:
         webflux:            # Spring Cloud Gateway 5.x prefix (reactive gateway)
           routes:
 
-            # --- Patient Service: REST API --------------------------------
+            # --- Patient Service: REST API (requires a valid JWT) ---------
             # GET http://localhost:4004/api/patients
+            #   Authorization: Bearer <token>
             #   -> GET http://patient-service:4000/patients
             - id: patient-service-route
               uri: ${PATIENT_SERVICE_URL:http://localhost:4000}
@@ -30,6 +37,7 @@ spring:
                 - Path=/api/patients/**
               filters:
                 - StripPrefix=1        # remove "/api" before forwarding
+                - JwtValidation        # 401 unless auth-service validates the token
 
             # --- Patient Service: OpenAPI docs ----------------------------
             # GET http://localhost:4004/api-docs/patients
@@ -40,3 +48,25 @@ spring:
                 - Path=/api-docs/patients
               filters:
                 - RewritePath=/api-docs/patients,/v3/api-docs
+
+            # --- Auth Service: login and token validation -----------------
+            # POST http://localhost:4004/auth/login
+            #   -> POST http://auth-service:4005/login
+            # GET  http://localhost:4004/auth/validate
+            #   -> GET  http://auth-service:4005/validate
+            - id: auth-service-route
+              uri: ${AUTH_SERVICE_URL:http://localhost:4005}
+              predicates:
+                - Path=/auth/**
+              filters:
+                - StripPrefix=1        # remove "/auth" before forwarding
+
+            # --- Auth Service: OpenAPI docs -------------------------------
+            # GET http://localhost:4004/api-docs/auth
+            #   -> GET http://auth-service:4005/v3/api-docs
+            - id: api-docs-auth-route
+              uri: ${AUTH_SERVICE_URL:http://localhost:4005}
+              predicates:
+                - Path=/api-docs/auth
+              filters:
+                - RewritePath=/api-docs/auth,/v3/api-docs
